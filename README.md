@@ -1,10 +1,15 @@
 # Replica 💎
 
-Replica is a golang code generation tool for mocking interfaces.
+Replica is a golang code generation tool for building mock implementations of interfaces.
 
 ## Usage
 
-go get 
+```sh
+# Must add directive to file of choice: //go:generate replica
+# And add the appropriate comment to the interface of choice: //replica:gen
+go install github.com/ethanperry1/replica@latest
+go generate ./...
+```
 
 ## Example
 

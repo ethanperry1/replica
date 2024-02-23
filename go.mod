@@ -1,4 +1,4 @@
-module replica
+module github.com/ethanperry1/replica
 
 go 1.21
 

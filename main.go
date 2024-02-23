@@ -6,7 +6,7 @@ import (
 	"go/token"
 	"io"
 	"os"
-	replica "replica/parser"
+	replica "github.com/ethanperry1/replica/parser"
 	"strings"
 )
 

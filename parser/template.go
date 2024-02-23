@@ -10,7 +10,7 @@ import( {{ range .Imports }}
 )
 {{ end }}{{ if .Mocks }}
 type ({{ range .Mocks }}
-	Mock{{ .Name }} struct { {{ range .Methods }}
+	Mock{{ .Name }}{{ if .Types }}[{{ range .Types }}{{.Name}} {{.Type}},{{ end }}]{{ end }} struct { {{ range .Methods }}
 		On{{ .Name }} func( {{ range .Function.Params }}
 			{{ .Name }} {{ .Type }},{{ end }}
 		) ( {{ range .Function.Returns }}
@@ -19,7 +19,7 @@ type ({{ range .Mocks }}
 	} {{ end }}
 )
 {{ end }}{{ range $mock := .Mocks }}{{ range .Methods }}
-func (mock *Mock{{ $mock.Name }}) {{ .Name }}({{ range .Function.Params }}
+func (mock *Mock{{ $mock.Name }}{{ if $mock.Types }}[{{ range $mock.Types }}{{.Name}},{{ end }}]{{ end }}) {{ .Name }}({{ range .Function.Params }}
 	{{ .Name }} {{ .Type }},{{ end }}
 ){{ if .Function.Returns }} ({{ range .Function.Returns }}
 	{{ .Type }}, {{end}}

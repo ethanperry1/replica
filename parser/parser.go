@@ -2,6 +2,7 @@
 package parser
 
 import (
+	"fmt"
 	ast "go/ast"
 	"go/token"
 	"strings"
@@ -21,6 +22,7 @@ type (
 
 	Mock struct {
 		Name    string
+		Types   []*Field
 		Methods []*Method
 	}
 
@@ -182,7 +184,9 @@ func (descender *RecursiveDescender) ParseTypeSpec(spec *ast.TypeSpec, generate 
 	switch s := spec.Type.(type) {
 	case *ast.InterfaceType:
 		if generate || CheckComments(spec.Doc) {
+			types := descender.ParseFields(spec.TypeParams)
 			return &Mock{
+				Types:   types,
 				Methods: descender.ParseInterface(s),
 				Name:    spec.Name.Name,
 			}, true
@@ -211,25 +215,32 @@ func (descender *RecursiveDescender) ParseInterface(typ *ast.InterfaceType) []*M
 	return methods
 }
 
-func (descender *RecursiveDescender) ParseFunction(fun *ast.FuncType) *Function {
+func (descender *RecursiveDescender) ParseFields(lst *ast.FieldList) []*Field {
 	var types []*Field
-	if fun.TypeParams != nil {
-		for _, field := range fun.TypeParams.List {
+	if lst != nil {
+		for _, field := range lst.List {
 			types = append(types, descender.ParseField(field)...)
 		}
 	}
 
-	var params []*Field
-	if fun.Params != nil {
-		for _, param := range fun.Params.List {
-			params = append(params, descender.ParseField(param)...)
+	return types
+}
+
+func (descender *RecursiveDescender) ParseFunction(fun *ast.FuncType) *Function {
+	types := descender.ParseFields(fun.TypeParams)
+	params := descender.ParseFields(fun.Params)
+	returns := descender.ParseFields(fun.Results)
+
+	paramNames := make(map[string]int)
+	for _, field := range params {
+		if field.Name != "" {
+			paramNames[field.Name]++
 		}
 	}
 
-	var returns []*Field
-	if fun.Results != nil {
-		for _, result := range fun.Results.List {
-			returns = append(returns, descender.ParseField(result)...)
+	for _, field := range params {
+		if field.Name == "" {
+			field.Name = buildName(paramNames, field.Type)
 		}
 	}
 
@@ -372,7 +383,7 @@ func (descender *RecursiveDescender) ParseStructType(s *ast.StructType) string {
 			fields = append(fields, field.Name+" "+field.Type)
 		}
 	}
-	return "struct {" + strings.Join(fields, ",") + "}"
+	return "struct {\n" + strings.Join(fields, "\n") + "}"
 }
 
 func (descender *RecursiveDescender) ParseEllipsis(e *ast.Ellipsis) string {
@@ -387,7 +398,7 @@ func (descender *RecursiveDescender) ParseInterfaceType(typ *ast.InterfaceType) 
 			methods = append(methods, field.Name+" "+field.Type)
 		}
 	}
-	return "interface {" + strings.Join(methods, ",") + "}"
+	return "interface {\n" + strings.Join(methods, "\n") + "}"
 }
 
 func (descender *RecursiveDescender) ParseStarExpression(expr *ast.StarExpr) string {
@@ -407,4 +418,21 @@ func (descender *RecursiveDescender) ParseChanType(typ *ast.ChanType) string {
 		return "<-chan " + res
 	}
 	return "chan " + res
+}
+
+func buildName(names map[string]int, typ string) string {
+	name := strings.ToLower(string([]byte{typ[0]}))
+	for {
+		_, ok := names[name]
+		names[name]++
+		if !ok {
+			return name
+		}
+
+		next := fmt.Sprintf("%s%d", name, names[name])
+		_, ok = names[next]
+		if !ok {
+			return next
+		}
+	}
 }

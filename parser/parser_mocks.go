@@ -6,6 +6,7 @@ import(
 )
 
 type (
+	// MockDescender is an automatically generated function mocking the Descender interface.
 	MockDescender struct { 
 		OnParseUsedImports func( 
 			idents map[string]int,
@@ -27,6 +28,7 @@ type (
 	} 
 )
 
+// ParseUsedImports is an automatically generated function used for mocking.
 func (mock *MockDescender) ParseUsedImports(
 	idents map[string]int,
 	imports map[string]*Import,
@@ -39,6 +41,7 @@ func (mock *MockDescender) ParseUsedImports(
 	)
 }
 
+// ParseImports is an automatically generated function used for mocking.
 func (mock *MockDescender) ParseImports(
 	specs []*ast.ImportSpec,
 ) (
@@ -49,6 +52,7 @@ func (mock *MockDescender) ParseImports(
 	)
 }
 
+// ParseFile is an automatically generated function used for mocking.
 func (mock *MockDescender) ParseFile(
 	file *ast.File,
 	generateAll bool,

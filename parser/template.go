@@ -10,6 +10,7 @@ import( {{ range .Imports }}
 )
 {{ end }}{{ if .Mocks }}
 type ({{ range .Mocks }}
+	// Mock{{ .Name }} is an automatically generated function mocking the {{ .Name }} interface.
 	Mock{{ .Name }}{{ if .Types }}[{{ range .Types }}{{.Name}} {{.Type}},{{ end }}]{{ end }} struct { {{ range .Methods }}
 		On{{ .Name }} func( {{ range .Function.Params }}
 			{{ .Name }} {{ .Type }},{{ end }}
@@ -19,6 +20,7 @@ type ({{ range .Mocks }}
 	} {{ end }}
 )
 {{ end }}{{ range $mock := .Mocks }}{{ range .Methods }}
+// {{ .Name }} is an automatically generated function used for mocking.
 func (mock *Mock{{ $mock.Name }}{{ if $mock.Types }}[{{ range $mock.Types }}{{.Name}},{{ end }}]{{ end }}) {{ .Name }}({{ range .Function.Params }}
 	{{ .Name }} {{ .Type }},{{ end }}
 ){{ if .Function.Returns }} ({{ range .Function.Returns }}
